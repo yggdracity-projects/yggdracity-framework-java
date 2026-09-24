@@ -1,0 +1,3 @@
+rootProject.name = 'yggdracity-framework-java'
+include 'yggdracity-core'
+include 'yggdracity-context'

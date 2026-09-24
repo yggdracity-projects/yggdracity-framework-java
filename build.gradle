@@ -1,0 +1,135 @@
+plugins {
+    id 'java'
+    id 'info.solidsoft.pitest' version '1.19.0'
+}
+
+// バージョン情報
+final def versionProps = new Properties()
+file('version.properties').withInputStream { versionProps.load(it) }
+
+ext {
+    springVersion = versionProps['version.spring'];
+}
+
+
+dependencies {
+    implementation project(':yggdracity-core')
+    implementation project(':yggdracity-context')
+}
+
+repositories {
+    mavenCentral()
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'info.solidsoft.pitest'
+
+    group = 'org.yggdracity'
+    version = versionProps['version.component']
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(
+                    versionProps['version.java'] as Integer
+            )
+        }
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        // Spring Boot
+        implementation "org.springframework.boot:spring-boot-autoconfigure:${springVersion}"
+        annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:${springVersion}"
+
+        // Util
+        implementation 'org.apache.commons:commons-lang3:3.20.0'
+
+        // テスト
+        testImplementation platform('org.junit:junit-bom:6.0.0')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        testImplementation 'org.mockito:mockito-core:5.23.0'
+        testImplementation 'org.mockito:mockito-junit-jupiter:5.23.0'
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+    javadoc {
+        // 各コンポーネントごとに分けて出力
+        destinationDir = file("$rootDir/build/docs/javadoc/${project.name}")
+        options {
+            title = String.format('Yggdracity Framework %s API', versionProps["version.component"])
+            header = "Yggdracity framework"
+            memberLevel = JavadocMemberLevel.PROTECTED
+            encoding = 'UTF-8'
+            locale = 'ja_JP'
+            links 'https://docs.oracle.com/en/java/javase/17/docs/api/'
+        }
+    }
+
+    pitest {
+        // PIT本体
+        pitestVersion = '1.19.4'
+
+        // JUnit5プラグイン
+        junit5PluginVersion = '1.2.3'
+
+        // 対象パッケージ（実際のパッケージ名に合わせて変更）
+        targetClasses = ['org.yggdracity.*']
+        targetTests = ['org.yggdracity.*']
+
+        // レポート
+        outputFormats = ['HTML']
+
+        // 並列実行
+        threads = 4
+
+        // テストが見つからない場合は失敗させる
+        failWhenNoMutations = true
+
+        // タイムアウト調整（必要なら）
+        timeoutConstInMillis = 4000
+
+        // Mutation Coverage が 80% 未満なら失敗
+//    mutationThreshold = 80
+
+        // テスト強度(Line Coverage)が 90% 未満なら失敗
+//    coverageThreshold = 90
+    }
+}
+
+
+tasks.register('aggregateJavadoc', Javadoc) {
+    group = 'Documentation'
+    description = 'Aggregates all Javadoc into one location'
+    source = files(subprojects.collect { it.sourceSets.main.allSource })
+    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+
+    // すべてのサブプロジェクトのソースコードを集めてJavadocを生成
+    source = files(subprojects.collect {
+        it.sourceSets.main.allJava.matching {
+            include '**/*.java'
+        }
+    })
+
+    // 出力先ディレクトリを統一
+    destinationDir = file("$rootDir/build/docs/javadoc")
+
+    options {
+        title = String.format('Yggdracity Framework %s API', versionProps["version.component"])
+        header = "Yggdracity framework"
+        memberLevel = JavadocMemberLevel.PROTECTED
+        encoding = 'UTF-8'
+        locale = 'ja_JP'
+        addStringOption('proc=none', null)
+        addBooleanOption('Xdoclint:none', true)
+        links 'https://docs.oracle.com/en/java/javase/17/docs/api/'
+    }
+
+    doLast {
+        println 'Aggregated Javadoc generated successfully!'
+    }
+}

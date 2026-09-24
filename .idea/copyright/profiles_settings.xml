@@ -1,0 +1,8 @@
+<component name="CopyrightManager">
+  <settings default="Yggdracity">
+    <module2copyright>
+      <element module="All" copyright="Yggdracity" />
+    </module2copyright>
+    <LanguageOptions name="JAVA" />
+  </settings>
+</component>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="openjdk-26" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/yggdracity-context" />
+            <option value="$PROJECT_DIR$/yggdracity-core" />
+            <option value="$PROJECT_DIR$/yggdracity-jdbc" />
+            <option value="$PROJECT_DIR$/yggdracity-sample" />
+            <option value="$PROJECT_DIR$/yggdracity-sample2" />
+            <option value="$PROJECT_DIR$/yggdracity-web" />
+          </set>
+        </option>
+        <option name="myGradleHome" value="D:\Gradle\gradle-8.6" />
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>
