@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'org.yggdracity'
-version = '1.0-SNAPSHOT'
+version = rootProject.ext.componentVersion
 
 repositories {
     mavenCentral()

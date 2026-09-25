@@ -30,15 +30,15 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * サービスの登録および自動ロードを管理するデフォルト実装です。
  *
- * <p>Spring Bootのスケジューラを使用して {@link ServiceFactory} から
- * サービスコンテキストを取得し、サービス登録コンテナとして管理します。</p>
+ * <p>Spring Bootのスケジューラを使用して{@link ServiceFactory}から
+ * サービスコンテキストを取得し、サービス名をキーとして管理します。</p>
  *
- * <p>{@link #start()} により自動ロードを開始し、
- * {@link #pause()} により自動ロードを一時停止します。</p>
+ * <p>{@link #start()}により自動ロードを開始し、
+ * {@link #pause()}により自動ロードを一時停止します。</p>
  *
  * <p>サービスコンテキストが再ロードされた場合は、
  * 新しいサービスコンテキストに置き換え、
- * 置き換え前の {@link ServiceContext} をクローズします。</p>
+ * 置き換え前の{@link ServiceContext}をクローズします。</p>
  *
  * @see ServiceRegisterContainer
  * @see ServiceFactory
@@ -53,9 +53,10 @@ public class DefaultServiceRegisterContainer implements ServiceRegisterContainer
     private final Map<String, ServiceContext> services = new ConcurrentHashMap<>();
 
     /**
-     * サービスファクトリを指定してサービス登録コンテナを生成します。
+     * アプリケーション識別子およびサービスファクトリを指定して
+     * サービス登録コンテナを生成します。
      *
-     * @param id      サービス登録コンテナの識別子
+     * @param id アプリケーションを識別するID
      * @param factory サービスコンテキストの生成に使用するサービスファクトリ
      * @since 1.0
      */
@@ -65,14 +66,14 @@ public class DefaultServiceRegisterContainer implements ServiceRegisterContainer
     }
 
     /**
-     * アプリケーションの起動完了時にサービスのロード処理を実行します。
+     * アプリケーションの起動完了時にサービスの初回ロードを実行します。
      *
-     * <p>{@link ApplicationReadyEvent} を契機として実行されるため、
-     * {@link Scheduled} で指定されたスケジュール時刻を待たずに、
-     * アプリケーション起動時の初回ロードを実行します。</p>
+     * <p>{@link ApplicationReadyEvent}を契機として実行されるため、
+     * {@link Scheduled}で指定されたスケジュール時刻を待たずに
+     * 初回のサービスロードを実行します。</p>
      *
-     * <p>起動後のサービスロードは、{@link #schedule()} によって
-     * 指定されたスケジュールに従って実行されます。</p>
+     * <p>初回ロード以降のサービスロードは、
+     * {@link #schedule()}によって指定されたスケジュールに従って実行されます。</p>
      *
      * @throws Exception サービスのロードに失敗した場合
      * @since 1.0
@@ -86,8 +87,8 @@ public class DefaultServiceRegisterContainer implements ServiceRegisterContainer
     /**
      * サービスの自動ロード処理を実行します。
      *
-     * <p>自動ロードが開始されている場合、
-     * {@link ServiceFactory} からサービスコンテキストの集合を取得し、
+     * <p>自動ロードが有効な場合、{@link ServiceFactory}から
+     * サービスコンテキストの集合を取得し、
      * 各サービスコンテキストをサービス名をキーとして登録します。</p>
      *
      * <p>すでに同一のサービス名のサービスコンテキストが登録されている場合は、

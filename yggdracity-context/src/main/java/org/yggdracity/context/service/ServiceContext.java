@@ -32,7 +32,7 @@ import java.time.LocalDateTime;
  * 使用しているクラスローダーを解放してください。</p>
  *
  * @param service        サービスインスタンス
- * @param id             サービス識別子
+ * @param id             アプリケーション識別子
  * @param name           サービス名
  * @param group          サービスが所属するグループ
  * @param version        サービスのバージョン

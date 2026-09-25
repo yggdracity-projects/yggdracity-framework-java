@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.yggdracity.context.cache.CacheFactory;
 import org.yggdracity.context.service.InvalidServiceDefinitionException;
 import org.yggdracity.context.service.ServiceContext;
 import org.yggdracity.context.service.ServiceDefinition;
@@ -100,9 +101,9 @@ public class DefaultServiceFactory implements ServiceFactory {
     }
 
     /**
-     * 指定されたサービス識別子に対応するサービスコンテキストを生成します。
+     * 指定されたアプリケーション識別子に対応するサービスコンテキストを生成します。
      *
-     * <p>サービス識別子からサービスの配置場所を特定し、設定されたバージョンまたは
+     * <p>アプリケーション識別子からサービスの配置場所を特定し、設定されたバージョンまたは
      * 最新バージョンのサービスJARをロードします。</p>
      *
      * <p>ロード対象のサービスJARに対して必要な検証を行った後、
@@ -112,7 +113,7 @@ public class DefaultServiceFactory implements ServiceFactory {
      * <p>1つのサービスJARから複数のサービス実装がロードされる場合があり、
      * ロードされた各サービス実装から {@link ServiceContext} を生成します。</p>
      *
-     * @param id サービス識別子
+     * @param id アプリケーション識別子
      * @return 生成されたサービスコンテキストの集合
      * @throws Exception サービスの検証、ロードまたはコンテキストの生成に失敗した場合
      * @since 1.0
@@ -124,12 +125,11 @@ public class DefaultServiceFactory implements ServiceFactory {
 
         final File path = this.getPath(id, base);
         final File target = this.getTarget(path, definition);
-
-        this.validate(target, id, definition);
-
         final File jar = Arrays.stream(Objects.requireNonNull(
                         target.listFiles((_, name) -> name.endsWith(".jar"))))
                 .findFirst().orElseThrow(() -> new FileNotFoundException("Service JAR not found: " + target));
+
+        this.validate(jar, id, definition);
 
         final URL url = Objects.requireNonNull(jar).toPath().toUri().toURL();
         final Set<ServiceContext> contexts = new HashSet<>();
@@ -154,13 +154,13 @@ public class DefaultServiceFactory implements ServiceFactory {
      * <p>サービスのセキュリティ設定に従って、サービス配置ディレクトリに含まれる
      * JARファイルの証明書およびチェックサムを検証します。</p>
      *
-     * @param target     検証対象のサービス配置ディレクトリ
-     * @param id         サービス識別子
+     * @param jar        検証対象のサービス配置ディレクトリ
+     * @param id         アプリケーション識別子
      * @param definition サービスの定義
      * @throws Exception サービスの検証に失敗した場合
      * @since 1.0
      */
-    private void validate(final File target, final String id, final Definition definition) throws Exception {
+    private void validate(final File jar, final String id, final Definition definition) throws Exception {
 
         if (definition.security() == null) {
             return;
@@ -173,12 +173,9 @@ public class DefaultServiceFactory implements ServiceFactory {
             final Security.CertificateParameter parameter = (Security.CertificateParameter) validators.get(Security.Validator.CERTIFICATE);
             this.certificateValidator.setParameter(parameter);
 
-            for (final File file : this.getJars(target)) {
-                final List<Certificate> certificates = Jar.getCertificates(file.toPath());
-
-                if (!this.certificateValidator.isValid(certificates)) {
-                    throw new IllegalStateException("Certificate validation failed for service '" + id + "': " + file.getAbsolutePath());
-                }
+            final List<Certificate> certificates = Jar.getCertificates(jar.toPath());
+            if (!this.certificateValidator.isValid(certificates)) {
+                throw new IllegalStateException("Certificate validation failed for service '" + id + "': " + jar.getAbsolutePath());
             }
         }
 
@@ -186,36 +183,22 @@ public class DefaultServiceFactory implements ServiceFactory {
             final Security.ChecksumParameter parameter = (Security.ChecksumParameter) validators.get(Security.Validator.CHECKSUM);
             this.checksumValidator.setParameter(parameter);
 
-            for (final File file : this.getJars(target)) {
-                if (!this.checksumValidator.isValid(file.toPath())) {
-                    throw new IllegalStateException("Checksum validation failed for service '" + id + "': " + file.getAbsolutePath());
-                }
+            if (!this.checksumValidator.isValid(jar.toPath())) {
+                throw new IllegalStateException("Checksum validation failed for service '" + id + "': " + jar.getAbsolutePath());
             }
         }
     }
 
     /**
-     * 指定されたディレクトリに配置されたJARファイルを取得します。
+     * 指定されたアプリケーション識別子からサービスの配置パスを取得します。
      *
-     * @param target サービスの配置ディレクトリ
-     * @return 指定されたディレクトリに配置されたJARファイルの一覧
-     * @since 1.0
-     */
-    private List<File> getJars(final File target) {
-        return Arrays.asList(Objects.requireNonNull(target.listFiles(
-                (_, name) -> name.endsWith(".jar"))));
-    }
-
-    /**
-     * 指定されたサービス識別子からサービスの配置パスを取得します。
-     *
-     * <p>サービス識別子をサービスのベースディレクトリに対する相対パスとして扱い、
+     * <p>アプリケーション識別子をサービスのベースディレクトリに対する相対パスとして扱い、
      * 正規化したパスがベースディレクトリ配下に存在することを検証します。</p>
      *
      * <p>絶対パス、ベースディレクトリ外を指すパス、またはファイルを指定した場合は
      * 例外をスローします。</p>
      *
-     * @param id   サービス識別子
+     * @param id   アプリケーション識別子
      * @param base サービスのベースディレクトリ
      * @return 検証済みのサービス配置パス
      * @throws IOException              パスの正規化に失敗した場合
@@ -277,7 +260,7 @@ public class DefaultServiceFactory implements ServiceFactory {
      * <p>{@link ServiceDefinition} が付与されていないサービスは、
      * サービス定義が不正なものとして扱います。</p>
      *
-     * @param id          サービス識別子
+     * @param id          アプリケーション識別子
      * @param service     ロードされたサービス
      * @param classLoader サービスのロードに使用したクラスローダー
      * @return 生成されたサービスコンテキスト
