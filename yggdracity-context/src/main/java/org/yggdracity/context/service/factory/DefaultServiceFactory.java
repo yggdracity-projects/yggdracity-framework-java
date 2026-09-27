@@ -21,11 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.yggdracity.context.cache.CacheFactory;
-import org.yggdracity.context.service.InvalidServiceDefinitionException;
-import org.yggdracity.context.service.ServiceContext;
-import org.yggdracity.context.service.ServiceDefinition;
-import org.yggdracity.context.service.ServiceDefinitionProperties;
+import org.yggdracity.context.cache.CacheHolder;
+import org.yggdracity.context.service.ServiceCacheHolder;
+import org.yggdracity.context.service.*;
 import org.yggdracity.context.service.ServiceDefinitionProperties.Service.Definition;
 import org.yggdracity.context.service.container.ServiceRegisterContainer;
 import org.yggdracity.context.validator.Security;
@@ -68,6 +66,7 @@ import java.util.*;
  * @see ServiceDefinitionProperties
  * @see CertificateValidator
  * @see ChecksumValidator
+ * @see CacheHolder
  * @since 1.0
  */
 public class DefaultServiceFactory implements ServiceFactory {
@@ -77,27 +76,37 @@ public class DefaultServiceFactory implements ServiceFactory {
     private final ServiceDefinitionProperties properties;
     private final CertificateValidator certificateValidator;
     private final ChecksumValidator checksumValidator;
+    private final CacheHolder<File, CachedService> holder;
 
     /**
-     * 指定された設定およびサービス型を使用してサービスファクトリを生成します。
+     * 指定された設定、サービス型、検証機能およびキャッシュを使用して
+     * サービスファクトリを生成します。
      *
      * <p>指定されたサービス型は、サービスJARからサービス実装をロードするために
      * {@link ServiceLoader} で使用されます。</p>
+     *
+     * <p>証明書およびチェックサムのValidatorが指定されていない場合は、
+     * それぞれ検証を行わないValidatorが使用されます。</p>
+     *
+     * <p>サービスのロード結果は、指定されたキャッシュを使用して管理され、
+     * サービスJARの更新状態に応じて再ロードが行われます。</p>
      *
      * @param context              Springのアプリケーションコンテキスト
      * @param services             {@link ServiceLoader} でロードするサービス型の一覧
      * @param properties           サービスのロードに使用する設定
      * @param certificateValidator 証明書検証に使用するValidator
      * @param checksumValidator    チェックサム検証に使用するValidator
+     * @param holder               サービスのロード結果を保持するキャッシュ
      * @since 1.0
      */
     public DefaultServiceFactory(final ApplicationContext context, final List<Class<?>> services, final ServiceDefinitionProperties properties,
-                                 final CertificateValidator certificateValidator, final ChecksumValidator checksumValidator) {
+                                 final CertificateValidator certificateValidator, final ChecksumValidator checksumValidator, final CacheHolder<File, CachedService> holder) {
         this.context = context;
         this.services = services;
         this.properties = properties;
         this.certificateValidator = certificateValidator != null ? certificateValidator : new NoOpCertificateValidator();
         this.checksumValidator = checksumValidator != null ? checksumValidator : new NoOpChecksumValidator();
+        this.holder = holder != null ? holder : new ServiceCacheHolder();
     }
 
     /**
@@ -106,7 +115,10 @@ public class DefaultServiceFactory implements ServiceFactory {
      * <p>アプリケーション識別子からサービスの配置場所を特定し、設定されたバージョンまたは
      * 最新バージョンのサービスJARをロードします。</p>
      *
-     * <p>ロード対象のサービスJARに対して必要な検証を行った後、
+     * <p>サービスJARがキャッシュされており、JARの更新日時に変更がない場合は、
+     * キャッシュされたサービスコンテキストを返します。</p>
+     *
+     * <p>JARが更新されている場合は、必要な検証を行った後、
      * 指定された各サービス型について {@link ServiceLoader} を使用して
      * サービス実装をロードします。</p>
      *
@@ -129,9 +141,14 @@ public class DefaultServiceFactory implements ServiceFactory {
                         target.listFiles((_, name) -> name.endsWith(".jar"))))
                 .findFirst().orElseThrow(() -> new FileNotFoundException("Service JAR not found: " + target));
 
+        final CachedService cached = this.holder.get(jar);
+        if (cached != null && jar.lastModified() == cached.lastModified()) {
+            return cached.contexts();
+        }
+
         this.validate(jar, id, definition);
 
-        final URL url = Objects.requireNonNull(jar).toPath().toUri().toURL();
+        final URL url = jar.toPath().toUri().toURL();
         final Set<ServiceContext> contexts = new HashSet<>();
         for (Class<?> service : this.services) {
             final URLClassLoader classLoader = new URLClassLoader(new URL[]{url}, service.getClassLoader());
@@ -145,16 +162,16 @@ public class DefaultServiceFactory implements ServiceFactory {
                 contexts.add(this.createContext(id, object, classLoader));
             }
         }
+        this.holder.put(jar, new CachedService(jar.lastModified(), contexts));
         return contexts;
     }
 
     /**
-     * 指定されたサービスの検証を行います。
+     * 指定されたサービスJARの検証を行います。
      *
-     * <p>サービスのセキュリティ設定に従って、サービス配置ディレクトリに含まれる
-     * JARファイルの証明書およびチェックサムを検証します。</p>
+     * <p>サービスのセキュリティ設定に従って、証明書およびチェックサムを検証します。</p>
      *
-     * @param jar        検証対象のサービス配置ディレクトリ
+     * @param jar        検証対象のサービスJAR
      * @param id         アプリケーション識別子
      * @param definition サービスの定義
      * @throws Exception サービスの検証に失敗した場合
