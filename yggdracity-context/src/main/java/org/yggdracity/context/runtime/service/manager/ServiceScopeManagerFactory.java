@@ -19,7 +19,6 @@ package org.yggdracity.context.runtime.service.manager;
 
 import org.yggdracity.context.runtime.service.ServiceContext;
 import org.yggdracity.context.runtime.service.resolver.scope.*;
-import org.yggdracity.context.service.resolver.scope.*;
 
 /**
  * サービスのスコープに応じた {@link ServiceScopeManager} を生成するファクトリです。
