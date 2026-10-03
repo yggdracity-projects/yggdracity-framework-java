@@ -17,15 +17,15 @@
 
 package org.yggdracity.context.version;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * バージョンを表す値オブジェクトです。
  *
  * <p>{@code major.minor} または {@code major.minor.patch} の形式の
  * バージョンを扱います。{@code major.minor} 形式の場合、
- * パッチバージョンは {@code 0} として扱います。</p>
+ * パッチバージョンは指定されていないものとして扱います。</p>
  *
  * <p>また、特別なバージョンとして {@code latest} を扱います。
  * {@code latest} は通常のバージョンより大きいバージョンとして比較されます。</p>
@@ -36,15 +36,18 @@ public class Version implements Comparable<Version> {
 
     private final long major;
     private final long minor;
-    private final long patch;
+    private final Long patch;
     private final boolean latest;
 
     /**
      * 指定されたバージョン文字列からバージョンを生成します。
      *
-     * <p>バージョン文字列は {@code major.minor.patch} の形式で指定します。
-     * {@code major.minor} の形式で指定した場合、パッチバージョンは
-     * {@code 0} として扱います。</p>
+     * <p>バージョン文字列は {@code major.minor} または
+     * {@code major.minor.patch} の形式で指定します。
+     * {@code major.minor} 形式の場合、パッチバージョンは
+     * {@code null} として扱います。</p>
+     *
+     * <p>{@code latest} を指定した場合は、特別なバージョンとして扱います。</p>
      *
      * @param version バージョン文字列
      * @throws IllegalArgumentException バージョン形式が不正な場合
@@ -59,7 +62,7 @@ public class Version implements Comparable<Version> {
         if (this.latest) {
             this.major = 0L;
             this.minor = 0L;
-            this.patch = 0L;
+            this.patch = null;
             return;
         }
 
@@ -72,10 +75,24 @@ public class Version implements Comparable<Version> {
         try {
             this.major = Long.parseLong(values[0]);
             this.minor = Long.parseLong(values[1]);
-            this.patch = values.length == 3 ? Long.parseLong(values[2]) : 0L;
+            this.patch = values.length == 3 ? Long.parseLong(values[2]) : null;
         } catch (final NumberFormatException exception) {
             throw new IllegalArgumentException("Invalid version: " + version, exception);
         }
+    }
+
+    /**
+     * 指定されたバージョン番号からバージョンを生成します。
+     *
+     * @param major メジャーバージョン
+     * @param minor マイナーバージョン
+     * @param patch パッチバージョン。指定しない場合は {@code null}
+     */
+    Version(final long major, final long minor, final Long patch) {
+        this.major = major;
+        this.minor = minor;
+        this.patch = patch;
+        this.latest = false;
     }
 
     /**
@@ -101,10 +118,13 @@ public class Version implements Comparable<Version> {
     /**
      * パッチバージョンを取得します。
      *
-     * @return パッチバージョン
+     * <p>バージョン文字列にパッチバージョンが指定されていない場合は
+     * {@code null} を返します。</p>
+     *
+     * @return パッチバージョン。指定されていない場合は {@code null}
      * @since 1.0
      */
-    public long patch() {
+    public @Nullable Long patch() {
         return this.patch;
     }
 
@@ -115,13 +135,16 @@ public class Version implements Comparable<Version> {
      * @since 1.0
      */
     public boolean isLatest() {
-        return latest;
+        return this.latest;
     }
 
     /**
      * 指定されたバージョンと比較します。
      *
-     * <p>メジャー、マイナー、パッチの順に比較します。</p>
+     * <p>通常のバージョンはメジャー、マイナー、パッチの順に比較します。
+     * パッチバージョンが指定されていない場合は {@code 0} として比較します。</p>
+     *
+     * <p>{@code latest} は通常のバージョンより大きいバージョンとして扱います。</p>
      *
      * @param version 比較対象のバージョン
      * @return このバージョンが小さい場合は負の値、
@@ -149,7 +172,9 @@ public class Version implements Comparable<Version> {
         }
 
         if (result == 0) {
-            result = Long.compare(this.patch, version.patch);
+            final long thisPatch = this.patch == null ? 0L : this.patch;
+            final long versionPatch = version.patch == null ? 0L : version.patch;
+            result = Long.compare(thisPatch, versionPatch);
         }
 
         return result;
@@ -158,12 +183,25 @@ public class Version implements Comparable<Version> {
     /**
      * バージョン文字列を返します。
      *
-     * @return {@code major.minor.patch} 形式のバージョン文字列
+     * <p>パッチバージョンが指定されていない場合は
+     * {@code major.minor} 形式、指定されている場合は
+     * {@code major.minor.patch} 形式で返します。</p>
+     *
+     * <p>{@code latest} の場合は {@code latest} を返します。</p>
+     *
+     * @return バージョン文字列
      * @since 1.0
      */
     @Override
     public String toString() {
-        return this.latest ? "latest" : this.major + "." + this.minor + "." + this.patch;
+        if (this.latest) {
+            return "latest";
+        }
+
+        if (this.patch == null) {
+            return this.major + "." + this.minor;
+        }
+
+        return this.major + "." + this.minor + "." + this.patch;
     }
 }
-

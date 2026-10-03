@@ -44,7 +44,7 @@ public class NoOpCertificateValidator extends AbstractCertificateValidator {
     /**
      * 証明書の検証を行わず、常に検証成功として扱います。
      *
-     * @param certificates 検証対象の証明書
+     * @param certificates 検証対象の証明書一覧
      * @return 常に {@code true}
      * @since 1.0
      */

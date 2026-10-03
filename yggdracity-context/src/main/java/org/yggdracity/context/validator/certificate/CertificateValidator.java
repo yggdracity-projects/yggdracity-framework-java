@@ -40,7 +40,7 @@ public interface CertificateValidator {
     /**
      * 指定された証明書が信頼できるものであるかを検証します。
      *
-     * @param certificates 検証対象の証明書
+     * @param certificates 検証対象の証明書一覧
      * @return 証明書が信頼できるものである場合は {@code true}、それ以外の場合は {@code false}
      * @since 1.0
      */
@@ -56,7 +56,7 @@ public interface CertificateValidator {
     void setParameter(final Security.CertificateParameter parameter);
 
     /**
-     * 証明書の信頼性検証に使用するプロパティを設定します。
+     * 証明書の検証に使用するプロパティを設定します。
      *
      * <p>実装ごとに追加の設定が必要な場合に使用します。
      * 設定が不要な実装では何も行いません。</p>

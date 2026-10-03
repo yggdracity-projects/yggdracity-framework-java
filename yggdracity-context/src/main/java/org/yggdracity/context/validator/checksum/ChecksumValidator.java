@@ -42,9 +42,9 @@ public interface ChecksumValidator {
     boolean isValid(Path file) throws Exception;
 
     /**
-     * チェックサムに使用するパラメータを設定します。
+     * チェックサムによる検証に使用するパラメータを設定します。
      *
-     * @param parameter チェックサムに使用するパラメータ
+     * @param parameter チェックサムによる検証に使用するパラメータ
      * @since 1.0
      */
     void setParameter(final Security.ChecksumParameter parameter);

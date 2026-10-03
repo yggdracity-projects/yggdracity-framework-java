@@ -1,0 +1,48 @@
+/*
+ * Copyright 2026 Yggdracity projects
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+package org.yggdracity.context.runtime.model;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.util.Map;
+
+/**
+ * 動的にロードするモデルの設定を保持します。
+ *
+ * <p>{@code yggdracity.runtime} 配下の設定を管理し、
+ * モデルJARの配置場所およびモデルごとの定義を提供します。</p>
+ *
+ * @param model モデルに関する設定
+ * @since 1.0
+ */
+@ConfigurationProperties(prefix = "yggdracity.runtime")
+public record ModelDefinitionProperties(Model model) {
+
+    /**
+     * 動的にロードするモデルに関する設定を保持します。
+     *
+     * <p>モデルJARの配置先となるベースディレクトリおよび
+     * モデルごとの定義を管理します。</p>
+     *
+     * @param base       モデルJARを配置するベースディレクトリ
+     * @param definition モデルごとの定義
+     * @since 1.0
+     */
+    public record Model(String base, Map<String, ModelDefinitionConfig> definition) {
+    }
+}

@@ -19,7 +19,6 @@ package org.yggdracity.context.validator.checksum;
 
 import org.yggdracity.context.validator.Security;
 
-import java.nio.file.Path;
 import java.util.Properties;
 
 /**
@@ -33,12 +32,12 @@ import java.util.Properties;
 public abstract class AbstractChecksumValidator implements ChecksumValidator {
 
     /**
-     * チェックサム検証に使用する設定です。
+     * チェックサム検証に使用するパラメータです。
      */
     protected Security.ChecksumParameter parameter;
 
     /**
-     * チェックサム検証で使用するプロパティです。
+     * チェックサム検証に使用する追加のプロパティです。
      */
     protected Properties properties;
 

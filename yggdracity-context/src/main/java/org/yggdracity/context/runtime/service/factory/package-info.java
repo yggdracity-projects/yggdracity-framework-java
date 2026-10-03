@@ -16,16 +16,8 @@
  */
 
 /**
- * 証明書を利用した検証機能を提供します。
- *
- * <p>証明書を検証するための {@link CertificateValidator} インターフェースと、
- * その共通処理および検証方式の実装を提供します。</p>
- *
- * <p>本パッケージの検証機能は、証明書を利用する処理から分離されており、
- * 証明書のフィンガープリントや証明書チェーンなど、
- * 検証方式に応じた検証に使用します。</p>
+ * サービスインスタンスの生成に関する機能を提供します。
  *
  * @since 1.0
  */
-package org.yggdracity.context.validator.certificate;
-
+package org.yggdracity.context.runtime.service.factory;

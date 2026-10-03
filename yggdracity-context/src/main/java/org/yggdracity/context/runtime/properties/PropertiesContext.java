@@ -15,17 +15,18 @@
  *
  */
 
+package org.yggdracity.context.runtime.properties;
+
 /**
- * 証明書を利用した検証機能を提供します。
+ * 動的に解決されたプロパティと、その識別情報を保持するコンテキストです。
  *
- * <p>証明書を検証するための {@link CertificateValidator} インターフェースと、
- * その共通処理および検証方式の実装を提供します。</p>
+ * <p>アプリケーション識別子、プロパティ定義の名前および
+ * 解決されたバージョンを保持します。</p>
  *
- * <p>本パッケージの検証機能は、証明書を利用する処理から分離されており、
- * 証明書のフィンガープリントや証明書チェーンなど、
- * 検証方式に応じた検証に使用します。</p>
- *
+ * @param id      アプリケーション識別子
+ * @param name    プロパティ定義の名前
+ * @param version プロパティのバージョン
  * @since 1.0
  */
-package org.yggdracity.context.validator.certificate;
-
+public record PropertiesContext(String id, String name, String version) {
+}

@@ -17,7 +17,6 @@
 
 package org.yggdracity.context.validator.checksum.none;
 
-import org.yggdracity.context.validator.Security;
 import org.yggdracity.context.validator.checksum.AbstractChecksumValidator;
 
 import java.nio.file.Path;
@@ -38,7 +37,7 @@ import java.nio.file.Path;
 public class NoOpChecksumValidator extends AbstractChecksumValidator {
 
     /**
-     * チェックサムの検証を行わず、常に検証成功として扱います。
+     * チェックサムの検証を行わず、常に {@code true} を返します。
      *
      * @param file 検証対象のファイル
      * @return 常に {@code true}

@@ -22,7 +22,7 @@ import org.yggdracity.context.validator.Security;
 import java.util.Properties;
 
 /**
- * 証明書の信頼性を検証する実装の基底クラスです。
+ * 証明書の検証処理を提供する基底クラスです。
  *
  * <p>証明書の検証に使用する設定およびプロパティを保持し、
  * 各検証方式で共通して利用する機能を提供します。</p>

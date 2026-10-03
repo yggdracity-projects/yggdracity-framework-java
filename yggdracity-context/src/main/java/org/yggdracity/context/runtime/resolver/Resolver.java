@@ -15,17 +15,25 @@
  *
  */
 
+package org.yggdracity.context.runtime.resolver;
+
+import org.jspecify.annotations.NonNull;
+
 /**
- * 証明書を利用した検証機能を提供します。
+ * 指定された識別子から対象のリソースを解決するリゾルバーです。
  *
- * <p>証明書を検証するための {@link CertificateValidator} インターフェースと、
- * その共通処理および検証方式の実装を提供します。</p>
- *
- * <p>本パッケージの検証機能は、証明書を利用する処理から分離されており、
- * 証明書のフィンガープリントや証明書チェーンなど、
- * 検証方式に応じた検証に使用します。</p>
- *
+ * @param <T> 解決するリソースの型
  * @since 1.0
  */
-package org.yggdracity.context.validator.certificate;
+public interface Resolver<T> {
 
+    /**
+     * 指定された識別子に対応するリソースを解決します。
+     *
+     * @param id リソースの識別子
+     * @return 解決されたリソース
+     * @throws Exception リソースの解決に失敗した場合
+     * @since 1.0
+     */
+    T resolve(@NonNull String id) throws Exception;
+}

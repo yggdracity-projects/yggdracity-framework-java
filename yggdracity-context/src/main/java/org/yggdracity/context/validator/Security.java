@@ -80,7 +80,7 @@ public record Security(Map<Validator, ? extends Parameter> validator) {
      * @param validator 検証方法
      * @param expected  期待する検証値
      * @param algorithm 証明書の検証に使用するアルゴリズム
-     * @param publicKey 公開鍵のフィンガープリント
+     * @param publicKey 公開鍵
      * @since 1.0
      */
     public record CertificateParameter(String validator, String expected, String algorithm,
@@ -90,7 +90,7 @@ public record Security(Map<Validator, ? extends Parameter> validator) {
     /**
      * チェックサムによる検証に使用するパラメータを保持します。
      *
-     * @param type      検証方法
+     * @param type      チェックサムの種別
      * @param expected  期待するチェックサム
      * @param algorithm チェックサムの生成に使用するアルゴリズム
      * @since 1.0

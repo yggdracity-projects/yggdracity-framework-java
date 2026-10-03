@@ -15,17 +15,19 @@
  *
  */
 
+package org.yggdracity.context.runtime.model;
+
+import org.yggdracity.context.runtime.resolver.Definition;
+import org.yggdracity.context.validator.Security;
+
 /**
- * 証明書を利用した検証機能を提供します。
+ * モデルの解決に使用する定義情報を保持します。
  *
- * <p>証明書を検証するための {@link CertificateValidator} インターフェースと、
- * その共通処理および検証方式の実装を提供します。</p>
+ * <p>モデルのバージョンおよびセキュリティ検証に関する設定を定義します。</p>
  *
- * <p>本パッケージの検証機能は、証明書を利用する処理から分離されており、
- * 証明書のフィンガープリントや証明書チェーンなど、
- * 検証方式に応じた検証に使用します。</p>
- *
+ * @param version  モデルのバージョン
+ * @param security セキュリティ検証の設定
  * @since 1.0
  */
-package org.yggdracity.context.validator.certificate;
-
+public record ModelDefinitionConfig(String version, Security security) implements Definition {
+}

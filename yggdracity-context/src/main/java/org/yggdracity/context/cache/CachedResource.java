@@ -15,17 +15,18 @@
  *
  */
 
+package org.yggdracity.context.cache;
+
 /**
- * 証明書を利用した検証機能を提供します。
+ * キャッシュされたリソースを保持します。
  *
- * <p>証明書を検証するための {@link CertificateValidator} インターフェースと、
- * その共通処理および検証方式の実装を提供します。</p>
+ * <p>リソースの最終更新日時とキャッシュ値を保持し、
+ * リソースが更新されたかどうかを判定するために使用します。</p>
  *
- * <p>本パッケージの検証機能は、証明書を利用する処理から分離されており、
- * 証明書のフィンガープリントや証明書チェーンなど、
- * 検証方式に応じた検証に使用します。</p>
- *
+ * @param <T>          キャッシュする値の型
+ * @param lastModified リソースの最終更新日時
+ * @param value        キャッシュされた値
  * @since 1.0
  */
-package org.yggdracity.context.validator.certificate;
-
+public record CachedResource<T>(long lastModified, T value) {
+}

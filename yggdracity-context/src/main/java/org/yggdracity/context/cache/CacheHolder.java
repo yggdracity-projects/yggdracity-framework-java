@@ -29,11 +29,11 @@ package org.yggdracity.context.cache;
 public interface CacheHolder<K, V> {
 
     /**
-     * 指定されたキーに対応するキャッシュを取得します。
+     * 指定されたキーに対応するキャッシュ値を取得します。
      *
      * @param key キャッシュのキー
-     * @return キーに対応するキャッシュされた値。
-     *         キャッシュが存在しない場合は {@code null}
+     * @return キーに対応するキャッシュ値。
+     * キャッシュが存在しない場合は {@code null}
      * @since 1.0
      */
     V get(K key);
@@ -43,7 +43,7 @@ public interface CacheHolder<K, V> {
      *
      * <p>同じキーにすでに値が存在する場合は、その値を置き換えます。</p>
      *
-     * @param key キャッシュのキー
+     * @param key   キャッシュのキー
      * @param value キャッシュする値
      * @since 1.0
      */
